@@ -7,11 +7,10 @@ GitHub: https://github.com/oppai/papertrail-exporter
 You can run via docker with:
 
 ```
-docker run -d -p 9098:9098 --name papertrail-exporter \
-  -web.listen-address=":9098" \
-  -web.telemetry-path="/metrics" \
-  -config.token="xxxxxxxx" \
-  oppai/papertrail-exporter:master
+docker run -p 9098:9098 kodam/papertrail-exporter:1.0.0 \
+    -web.listen-address=":9098" \
+    -web.telemetry-path="/metrics" \
+    -config.token="xxxxxxxxxx"
 ```
 
 You'll need to customize the docker image or use the binary on the host system
