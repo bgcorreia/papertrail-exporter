@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"flag"
 	"fmt"
 	"net/http"
@@ -20,10 +21,10 @@ var (
 )
 
 type LogTransfer struct {
-	HardLimit   int64
-	PlanLimit   int64
-	Used        int64
-	UsedPercent float64
+	HardLimit   int64   `json:"log_data_transfer_hard_limit"`
+	PlanLimit   int64   `json:"log_data_transfer_plan_limit"`
+	Used        int64   `json:"log_data_transfer_used"`
+	UsedPercent float64 `json:"log_data_transfer_used_percent"`
 }
 
 type Measurement struct {
@@ -32,13 +33,29 @@ type Measurement struct {
 	Duration    float64
 }
 
+func sendGetRequest() (*http.Response, error) {
+	req, _ := http.NewRequest("GET", "https://papertrailapp.com/api/v1/accounts.json", nil)
+	req.Header.Set("X-Papertrail-Token", *accessToken)
+	client := new(http.Client)
+	return client.Do(req)
+}
+
 func getPapertrail() (*LogTransfer, error) {
-	return &LogTransfer{
-		HardLimit:   0,
-		PlanLimit:   0,
-		Used:        0,
-		UsedPercent: 10.0,
-	}, nil
+	// get param
+	resp, err := sendGetRequest()
+	if err != nil {
+		return &LogTransfer{}, err
+	}
+	defer resp.Body.Close()
+
+	data := LogTransfer{}
+	err = json.NewDecoder(resp.Body).Decode(&data)
+	if err != nil {
+		fmt.Println("JSON Decode error:", err)
+		return &LogTransfer{}, err
+	}
+
+	return &data, nil
 }
 
 func getMeasurement() *Measurement {
